@@ -10,3 +10,5 @@ knex.schema.createTable('user', t => {
   t.foreign('user_id').references('user_id')
   t.timestamp('created_at').defaultTo(knex.fn.now())
 })).then(process.exit)
+
+knex.schema.alterTable()

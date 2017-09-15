@@ -2,11 +2,21 @@
   <input type="submit" value="로그아웃">
 </form>
 
+<!-- URL 입력 창 만들기 -->
+<form action="/url_entry" method="post">
+  <label>
+    URL
+    <input type="url" name="long_url">
+  </label>
+  <input type="submit" value="전송">
+</form>
+
 <table>
   <% rows.forEach(entry => { %>
     <tr>
       <td><%= entry.id %></td>
       <td><%= entry.long_url %></td>
+      <td><%= entry.created_at.toISOString() %></td>
     </tr>
   <% }) %>
 </table>

@@ -57,6 +57,30 @@ app.post('/logout', (req, res) => {
   res.redirect('/login')
 })
 
+// URL입력을 받는 부분
+app.post('/url_entry', authMiddleware, urlencodedMiddleware, (req, res) => {
+  const long_url = req.body.long_url
+  // 데이터 저장
+  query.createUrlEntry(long_url, req.user.id)
+    .then(() => {
+      res.redirect('/')
+    })
+})
+
+// 짧은 URL사용해서 redirect시킴
+app.get('/:id', (req, res, next) => {
+  query.getUrlByID(req.params.id)
+    .then(entry => {
+      if(entry){
+        // URL을 사용해서 하는 것은 301이 좋지만 302를 사용하여 나중에 조회수를 알아보기위해 302 사용
+        res.redirect(entry.long_url)
+      } else {
+        // 라우트 핸들러를 사용하여 404를 만들 수 있지만 next를 사용하여 나중에 받을 수 있게 만들어놓음
+        next()
+      }
+    })
+})
+
 app.listen(3000, () => {
   console.log('listening...')
 })
