@@ -72,12 +72,30 @@ app.get('/:id', (req, res, next) => {
   query.getUrlByID(req.params.id)
     .then(entry => {
       if(entry){
+        query.incrementClickCountById(entry.id)
+          .then(() => {
+            res.redirect(entry.long_url)
+          })
         // URL을 사용해서 하는 것은 301이 좋지만 302를 사용하여 나중에 조회수를 알아보기위해 302 사용
         res.redirect(entry.long_url)
       } else {
         // 라우트 핸들러를 사용하여 404를 만들 수 있지만 next를 사용하여 나중에 받을 수 있게 만들어놓음
         next()
       }
+    })
+})
+
+// 회원가입
+app.get('/register', (req, res) => {
+  res.render('register.ejs')
+})
+
+app.post('/register', urlencodedMiddleware, (req, res) => {
+  // 계정 정보 저장 후 로그인
+  query.createUser(req.body.id, req.body.password)
+    .then(() => {
+      req.session.id = req.body.id
+      res.redirect('/')
     })
 })
 
