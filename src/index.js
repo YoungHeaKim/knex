@@ -2,6 +2,7 @@ const express = require('express')
 const cookieSession = require('cookie-session')
 const bodyParser = require('body-parser')
 const bcrypt = require('bcrypt')
+const flash = require('connect-flash')
 
 const query = require('./query')
 
@@ -13,6 +14,8 @@ app.use(cookieSession({
   keys: ['mysecret']
 }))
 app.set('view engine', 'ejs')
+
+app.use(flash())
 
 function authMiddleware(req, res, next) {
   if(req.session.id) {
@@ -37,7 +40,7 @@ app.get('/', authMiddleware, (req, res) => {
 })
 
 app.get('/login', (req, res) => {
-  res.render('login.ejs')
+  res.render('login.ejs', {errors: req.flash('error')})
 })
 
 app.post('/login', urlencodedMiddleware, (req, res) => {
@@ -47,8 +50,9 @@ app.post('/login', urlencodedMiddleware, (req, res) => {
         req.session.id = matched.id
         res.redirect('/')
       } else {
-        res.status(400)
-        res.send('왜안될깡?')
+        // session에 정보를 저장함
+        req.flash('error', '아이디 혹은 비밀번호가 일치하지 않습니다.')
+        res.redirect('/login')
       }
     })
 })
@@ -67,8 +71,8 @@ app.post('/url_entry', authMiddleware, urlencodedMiddleware, (req, res) => {
       res.redirect('/')
     })
     .catch(err => {
-      res.status(400)
-      res.send(err.message)
+      req.flash('error', '올바른 URL이 아닙니다.')
+      res.redirect('/')
     })
 })
 
