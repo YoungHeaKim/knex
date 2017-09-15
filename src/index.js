@@ -66,6 +66,10 @@ app.post('/url_entry', authMiddleware, urlencodedMiddleware, (req, res) => {
     .then(() => {
       res.redirect('/')
     })
+    .catch(err => {
+      res.status(400)
+      res.send(err.message)
+    })
 })
 
 // 짧은 URL사용해서 redirect시킴

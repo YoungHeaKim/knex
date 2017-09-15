@@ -20,6 +20,7 @@
     "faker": "^4.1.0",
     "knex": "^0.13.0",
     "mysql": "^2.14.1",
-    "randomstring": "^1.1.5"
+    "randomstring": "^1.1.5",
+    "validator": "^8.2.0"
   }
 }
