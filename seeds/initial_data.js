@@ -21,7 +21,7 @@ exports.seed = function(knex, Promise) {
       )
     }
 
-    return promise.all(arr)
+    return Promise.all(arr)
   })
   // promise가 감싸고 있는 값이 밑의 then에 들어간다.
   // .then(value => {})
