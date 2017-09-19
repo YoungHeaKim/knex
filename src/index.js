@@ -4,6 +4,8 @@ const bodyParser = require('body-parser')
 const bcrypt = require('bcrypt')
 const flash = require('connect-flash')
 const csurf = require('csurf')
+const passport = require('passport')
+const LocalStrategy = require('passport-local').Strategy
 
 const query = require('./query')
 
@@ -20,19 +22,47 @@ app.use(csrfMiddleware)
 app.use(flash())
 app.set('view engine', 'ejs')
 
+app.use(passport.initialize())
+// JWT를 사용시 밑에 session은 필요없다.
+app.use(passport.session())
+
+// 객체로부터 문자열을 빼내는 방법
+passport.serializeUser((user, done) => {
+  // user 객체로부터 세션에 저장할 수 있는 문자열을 만들어 반환
+  // done의 사용법은 밑에와 같다.
+  done(null, user.id)
+})
+
+// 지속적으로 user를 가져오고 싶을 때 사용
+passport.deserializeUser((id, done) => {
+  // 세션에 저장되어 있는 id를 통해 user 객체를 얻어온 후 반환
+  query.getUserById(id)
+    .then(user => {
+      if(user) {
+        done(null, user)
+      } else {
+        done(new Error('아이디가 일치하는 사용자가 없습니다.'))
+      }
+    })
+})
+
+// 최초의 로그인을 시킬 때 username과 password를 비교하여 있으면 done으로 객체로 넘겨준다.
+passport.use(new LocalStrategy((username, password, done) => {
+  query.getUserById(req.body.username)
+    .then(matched => {
+      if(matched && bcrypt.compareSync(matched.password)) {
+        // login을 시켜주는 처리
+        done(null, matched)
+      } else {
+        // 로그인을 시켜주지 않는 처리
+        // 보안을 강화시키기 위해 둘중 하나가 틀려도 둘다 틀렸다고 알려주는 것을 좋다.
+        done(new Error('사용자 이름 혹은 비밀번호가 일치하지 않습니다.'))
+      }
+    })
+}))
+
 function authMiddleware(req, res, next) {
-  if(req.session.id) {
-    query.getUserById(req.session.id)
-      .then(matched => {
-        req.user = matched
-        // 템플릿에서 직접 쓰지 않아도 사용가능한 용어
-        res.locals.user = matched
-        next()
-      })
-  } else {
-    // login이 되지 않았을 경우 login페이지로 이동 시킨다.
-    res.redirect('/login')
-  }
+
 }
 
 app.get('/', authMiddleware, (req, res) => {
