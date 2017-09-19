@@ -1,5 +1,6 @@
 const faker = require('faker')
 const randomstring = require('randomstring')
+const bcrypt = require('bcrypt')
 
 exports.seed = function(knex, Promise) {
   // Deletes ALL existing entries

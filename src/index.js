@@ -47,10 +47,10 @@ passport.deserializeUser((id, done) => {
 })
 
 // 최초의 로그인을 시킬 때 username과 password를 비교하여 있으면 done으로 객체로 넘겨준다.
-passport.use(new LocalStrategy((username, password, done) => {
-  query.getUserById(req.body.username)
+passport.use(new LocalStrategy((username,password, done) => {
+  query.getUserById(username)
     .then(matched => {
-      if(matched && bcrypt.compareSync(matched.password)) {
+      if(matched && bcrypt.compareSync(password, matched.password)) {
         // login을 시켜주는 처리
         done(null, matched)
       } else {
@@ -82,22 +82,17 @@ app.get('/login', (req, res) => {
   res.render('login.ejs', {errors: req.flash('error'), csrfToken: req.csrfToken()})
 })
 
-app.post('/login', (req, res) => {
-  query.getUserById(req.body.username)
-    .then(matched => {
-      if(matched && bcrypt.compareSync(req.body.password, matched.password)) {
-        req.session.id = matched.id
-        res.redirect('/')
-      } else {
-        // session에 정보를 저장함
-        req.flash('error', '아이디 혹은 비밀번호가 일치하지 않습니다.')
-        res.redirect('/login')
-      }
-    })
-})
+// passport가 만들어줄 라우트핸들러를 작성한다.
+app.post('/login', passport.authenticate('local', {
+  successRedirect: '/',
+  failureRedirect: '/login',
+  // 위에서 선언을 해주었던것을 그대로 가져올 수 있다.
+  failureFlash: true
+}))
 
 app.post('/logout', (req, res) => {
-  req.session = null
+  // passport가 제공해주는 logout을 해준다.
+  req.logout()
   res.redirect('/login')
 })
 
