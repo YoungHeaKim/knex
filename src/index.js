@@ -61,8 +61,14 @@ passport.use(new LocalStrategy((username, password, done) => {
     })
 }))
 
+// 로그인이 되어있으면 통과시키고 안되있으면 로그인페이지로 되돌아가게 만들어 주는 역할
 function authMiddleware(req, res, next) {
-
+  if(req.user) {
+    // 로그인이 된 상태이므로 그냥 통과시킨다.
+    next()
+  } else {
+    res.redirect('/login')
+  }
 }
 
 app.get('/', authMiddleware, (req, res) => {
